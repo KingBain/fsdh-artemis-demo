@@ -1,0 +1,67 @@
+<!doctype html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A simple Government of Canada single-page site built with the GC Design System."
+    />
+    <title>My GC Single Page</title>
+
+    <!-- GC Design System CSS shortcuts -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.design-system.canada.ca/@gcds-core/css-shortcuts@1.0.1/dist/gcds-css-shortcuts.min.css"
+    />
+
+    <!-- GC Design System components -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.design-system.canada.ca/@gcds-core/components@1.0.0/dist/gcds/gcds.css"
+    />
+    <script
+      type="module"
+      src="https://cdn.design-system.canada.ca/@gcds-core/components@1.0.0/dist/gcds/gcds.esm.js"
+    ></script>
+  </head>
+
+  <body>
+    <gcds-header lang-href="#fr" skip-to-href="#main-content">
+      <gcds-breadcrumbs slot="breadcrumb">
+        <gcds-breadcrumbs-item href="/">Home</gcds-breadcrumbs-item>
+      </gcds-breadcrumbs>
+    </gcds-header>
+
+    <gcds-container id="main-content" layout="page" tag="main">
+      <section class="mt-400 mb-600">
+        <gcds-heading tag="h1">Welcome</gcds-heading>
+        <gcds-text>
+          This is a single-page site hosted on GitHub Pages using the GC Design System.
+        </gcds-text>
+      </section>
+
+      <section class="mb-600">
+        <gcds-heading tag="h2">About this page</gcds-heading>
+        <gcds-text>
+          It uses official GC Design System web components loaded from the CDN,
+          so you do not need a build pipeline for a simple static page.
+        </gcds-text>
+      </section>
+
+      <section class="mb-600">
+        <gcds-heading tag="h2">Next steps</gcds-heading>
+        <gcds-text>
+          Replace this content with your actual service or project information.
+        </gcds-text>
+        <gcds-link href="https://design-system.canada.ca/en/components/">
+          Explore GC Design System components
+        </gcds-link>
+      </section>
+
+      <gcds-date-modified>2026-04-01</gcds-date-modified>
+    </gcds-container>
+
+    <gcds-footer display="full"></gcds-footer>
+  </body>
+</html>
