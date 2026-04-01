@@ -1,0 +1,378 @@
+{
+  "datasets": [
+    {
+      "name": "44ef0b83",
+      "displayName": "Orion Velocity Trends Over Time Analysis Dataset",
+      "queryLines": [
+        "SELECT *\n",
+        "FROM fsdh_artemis.vw_orion_speed_over_time\n",
+        "ORDER BY epoch_utc"
+      ]
+    },
+    {
+      "name": "fbe3ae19",
+      "displayName": "Orion Distance Tracking Over Time View",
+      "queryLines": [
+        "SELECT *\n",
+        "FROM fsdh_artemis.vw_orion_distance_over_time\n",
+        "ORDER BY epoch_utc"
+      ]
+    },
+    {
+      "name": "2f314f21",
+      "displayName": "Latest Orion Timestamp",
+      "queryLines": [
+        "SELECT\n",
+        "  latest_epoch_utc\n",
+        "FROM fsdh_artemis.vw_orion_latest_kpis"
+      ]
+    },
+    {
+      "name": "2f708336",
+      "displayName": "Latest Orion Speed",
+      "queryLines": [
+        "SELECT\n",
+        "  speed_km_s\n",
+        "FROM fsdh_artemis.vw_orion_latest_kpis"
+      ]
+    },
+    {
+      "name": "speed_vs_distance",
+      "displayName": "Orion Speed vs Distance Over Time",
+      "queryLines": [
+        "SELECT\n",
+        "  s.epoch_utc,\n",
+        "  s.mission_elapsed_hours,\n",
+        "  s.speed_km_s,\n",
+        "  d.distance_from_origin_km\n",
+        "FROM\n",
+        "  fsdh_artemis.vw_orion_speed_over_time s\n",
+        "    JOIN fsdh_artemis.vw_orion_distance_over_time d\n",
+        "      ON s.epoch_utc = d.epoch_utc\n",
+        "ORDER BY\n",
+        "  s.epoch_utc"
+      ]
+    },
+    {
+      "name": "state_vector_count",
+      "displayName": "Orion State Vector Count",
+      "queryLines": [
+        "SELECT\n",
+        "  COUNT(*) AS state_vector_count\n",
+        "FROM\n",
+        "  fsdh_artemis.vw_orion_speed_over_time"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "56df1572",
+      "displayName": "Cards",
+      "layout": [
+        {
+          "widget": {
+            "name": "598040c9",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "44ef0b83",
+                  "fields": [
+                    {
+                      "name": "mission_elapsed_hours",
+                      "expression": "`mission_elapsed_hours`"
+                    },
+                    {
+                      "name": "speed_km_s",
+                      "expression": "`speed_km_s`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Orion Speed Over Mission Elapsed Hours",
+                "showTitle": true
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "mission_elapsed_hours",
+                  "displayName": "Mission Elapsed Hours",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "speed_km_s",
+                  "displayName": "Speed (km/s)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 11,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "80bff872",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "speed_vs_distance",
+                  "fields": [
+                    {
+                      "name": "mission_elapsed_hours",
+                      "expression": "`mission_elapsed_hours`"
+                    },
+                    {
+                      "name": "distance_from_origin_km",
+                      "expression": "`distance_from_origin_km`"
+                    },
+                    {
+                      "name": "speed_km_s",
+                      "expression": "`speed_km_s`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Distance vs Speed Over Time",
+                "showTitle": true
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "distance_from_origin_km",
+                  "displayName": "Distance from Origin (km)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "speed_km_s",
+                  "displayName": "Speed (km/s)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "mission_elapsed_hours",
+                  "displayName": "Mission Elapsed Hours",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 11,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "df838ac3",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "2f708336",
+                  "fields": [
+                    {
+                      "name": "speed_km_s",
+                      "expression": "`speed_km_s`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Latest Orion Speed",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "speed_km_s",
+                  "displayName": "Speed (km/s)"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "93be80c0",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "2f314f21",
+                  "fields": [
+                    {
+                      "name": "latest_epoch_utc",
+                      "expression": "`latest_epoch_utc`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Latest Orion Timestamp",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "latest_epoch_utc",
+                  "displayName": "Latest Epoch (UTC)"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 11,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "e90f2f98",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "state_vector_count",
+                  "fields": [
+                    {
+                      "name": "state_vector_count",
+                      "expression": "`state_vector_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Orion State Vector Count",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "state_vector_count",
+                  "displayName": "State Vector Count"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 5,
+            "height": 3
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "06a003d7",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "fe0141a6",
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {},
+              "frame": {
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#1F1B2E",
+        "dark": "#0C0B1D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#2A2442",
+        "dark": "#1B1833"
+      },
+      "widgetBorderColor": {
+        "light": "#5E5A80",
+        "dark": "#3F3B60"
+      },
+      "fontColor": {
+        "light": "#FDFDFD",
+        "dark": "#F5F5F5"
+      },
+      "selectionColor": {
+        "light": "#FF6EC7",
+        "dark": "#FF6EC7"
+      },
+      "visualizationColors": [
+        "#FF6EC7",
+        "#00FFF7",
+        "#BF00FF",
+        "#FF5F1F",
+        "#FFFF4D",
+        "#D9007F",
+        "#007FFF"
+      ],
+      "widgetHeaderAlignment": "LEFT"
+    },
+    "applyModeEnabled": false
+  }
+}
