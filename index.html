@@ -1,67 +1,126 @@
-<!doctype html>
-<html dir="ltr" lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="A simple Government of Canada single-page site built with the GC Design System."
-    />
-    <title>Federal Science Datahub - Artemis Data Publishing Demo Site</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Artemis II Mission Overview</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f7f9fc;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: #4b5563;
+      margin-bottom: 2rem;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .card h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      color: #374151;
+    }
+    .card .value {
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .chart {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    th {
+      background: #f3f4f6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Artemis II Mission Overview</h1>
+    <p class="subtitle">
+      Databricks-generated static site using OEM trajectory data processed through the FSDH demo pipeline.
+    </p>
 
-    <!-- GC Design System CSS shortcuts -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.design-system.canada.ca/@gcds-core/css-shortcuts@1.0.1/dist/gcds-css-shortcuts.min.css"
-    />
+    <div class="card-grid">
+      <div class="card">
+        <h2>Latest Orion Timestamp</h2>
+        <div class="value">2026-04-10 23:53:05.702000</div>
+      </div>
+      <div class="card">
+        <h2>Latest Speed (km/s)</h2>
+        <div class="value">10.992</div>
+      </div>
+      <div class="card">
+        <h2>State Vector Count</h2>
+        <div class="value">3211</div>
+      </div>
+      <div class="card">
+        <h2>Mission Duration (hours)</h2>
+        <div class="value">212.90</div>
+      </div>
+    </div>
 
-    <!-- GC Design System components -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.design-system.canada.ca/@gcds-core/components@1.0.0/dist/gcds/gcds.css"
-    />
-    <script
-      type="module"
-      src="https://cdn.design-system.canada.ca/@gcds-core/components@1.0.0/dist/gcds/gcds.esm.js"
-    ></script>
-  </head>
+    <div class="section">
+      <h2>Mission Metadata</h2>
+      <table>
+        <tr><th>Object Name</th><td>EM2</td></tr>
+        <tr><th>Center Name</th><td>EARTH</td></tr>
+        <tr><th>Reference Frame</th><td>EME2000</td></tr>
+        <tr><th>Time System</th><td>UTC</td></tr>
+      </table>
+    </div>
 
-  <body>
-    <gcds-header lang-href="#fr" skip-to-href="#main-content">
-      <gcds-breadcrumbs slot="breadcrumb">
-        <gcds-breadcrumbs-item href="/">Home</gcds-breadcrumbs-item>
-      </gcds-breadcrumbs>
-    </gcds-header>
+    <div class="section">
+      <h2>Orion Speed Over Time</h2>
+      <img class="chart" src="./assets/orion-speed-over-time.png" alt="Orion Speed Over Time">
+    </div>
 
-    <gcds-container id="main-content" layout="page" tag="main">
-      <section class="mt-400 mb-600">
-        <gcds-heading tag="h1">Welcome</gcds-heading>
-        <gcds-text>
-          This is a single-page site hosted on GitHub Pages using the GC Design System.
-        </gcds-text>
-      </section>
+    <div class="section">
+      <h2>Orion Distance From Origin Over Time</h2>
+      <img class="chart" src="./assets/orion-distance-over-time.png" alt="Orion Distance From Origin Over Time">
+    </div>
 
-      <section class="mb-600">
-        <gcds-heading tag="h2">About this page</gcds-heading>
-        <gcds-text>
-          It uses official GC Design System web components loaded from the CDN,
-          so you do not need a build pipeline for a simple static page.
-        </gcds-text>
-      </section>
-
-      <section class="mb-600">
-        <gcds-heading tag="h2">Next steps</gcds-heading>
-        <gcds-text>
-          Replace this content with your actual service or project information.
-        </gcds-text>
-        <gcds-link href="https://design-system.canada.ca/en/components/">
-          Explore GC Design System components
-        </gcds-link>
-      </section>
-
-      <gcds-date-modified>2026-04-01</gcds-date-modified>
-    </gcds-container>
-
-    <gcds-footer display="full"></gcds-footer>
-  </body>
+    <div class="section">
+      <h2>Summary Card</h2>
+      <img class="chart" src="./assets/orion-summary-card.png" alt="Orion Summary Card">
+    </div>
+  </div>
+</body>
 </html>
