@@ -1,126 +1,179 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Artemis II Mission Overview</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 2rem;
-      background: #f7f9fc;
-      color: #1f2937;
-    }
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    h1 {
-      margin-bottom: 0.5rem;
-    }
-    .subtitle {
-      color: #4b5563;
-      margin-bottom: 2rem;
-    }
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    .card h2 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1rem;
-      color: #374151;
-    }
-    .card .value {
-      font-size: 1.4rem;
-      font-weight: bold;
-    }
-    .section {
-      background: white;
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    .chart {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      text-align: left;
-      padding: 0.75rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    th {
-      background: #f3f4f6;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Artemis II Mission Overview</h1>
-    <p class="subtitle">
-      Databricks-generated static site using OEM trajectory data processed through the FSDH demo pipeline.
-    </p>
+<!doctype html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Artemis II mission overview generated from Databricks using the GC Design System."
+    />
+    <title>Artemis II Mission Overview</title>
 
-    <div class="card-grid">
-      <div class="card">
-        <h2>Latest Orion Timestamp</h2>
-        <div class="value">2026-04-10 23:53:05.702000</div>
-      </div>
-      <div class="card">
-        <h2>Latest Speed (km/s)</h2>
-        <div class="value">10.992</div>
-      </div>
-      <div class="card">
-        <h2>State Vector Count</h2>
-        <div class="value">3211</div>
-      </div>
-      <div class="card">
-        <h2>Mission Duration (hours)</h2>
-        <div class="value">212.90</div>
-      </div>
-    </div>
+    <link
+      rel="stylesheet"
+      href="https://cdn.design-system.canada.ca/@gcds-core/css-shortcuts@1.0.1/dist/gcds-css-shortcuts.min.css"
+    />
 
-    <div class="section">
-      <h2>Mission Metadata</h2>
-      <table>
-        <tr><th>Object Name</th><td>EM2</td></tr>
-        <tr><th>Center Name</th><td>EARTH</td></tr>
-        <tr><th>Reference Frame</th><td>EME2000</td></tr>
-        <tr><th>Time System</th><td>UTC</td></tr>
-      </table>
-    </div>
+    <link
+      rel="stylesheet"
+      href="https://cdn.design-system.canada.ca/@gcds-core/components@1.0.0/dist/gcds/gcds.css"
+    />
+    <script
+      type="module"
+      src="https://cdn.design-system.canada.ca/@gcds-core/components@1.0.0/dist/gcds/gcds.esm.js"
+    ></script>
 
-    <div class="section">
-      <h2>Orion Speed Over Time</h2>
-      <img class="chart" src="./assets/orion-speed-over-time.png" alt="Orion Speed Over Time">
-    </div>
+    <style>
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+      }
 
-    <div class="section">
-      <h2>Orion Distance From Origin Over Time</h2>
-      <img class="chart" src="./assets/orion-distance-over-time.png" alt="Orion Distance From Origin Over Time">
-    </div>
+      .metric-card {
+        border: 1px solid #d7dbe0;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        background: #fff;
+      }
 
-    <div class="section">
-      <h2>Summary Card</h2>
-      <img class="chart" src="./assets/orion-summary-card.png" alt="Orion Summary Card">
-    </div>
-  </div>
-</body>
+      .metric-label {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        color: #333;
+      }
+
+      .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .chart-block {
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .chart-img {
+        width: 100%;
+        height: auto;
+        border: 1px solid #d7dbe0;
+        border-radius: 0.375rem;
+        background: #fff;
+      }
+
+      .meta-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+
+      .meta-table th,
+      .meta-table td {
+        text-align: left;
+        padding: 0.75rem;
+        border-bottom: 1px solid #d7dbe0;
+        vertical-align: top;
+      }
+
+      .meta-table th {
+        width: 30%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <gcds-header lang-href="#fr" skip-to-href="#main-content">
+      <gcds-breadcrumbs slot="breadcrumb">
+        <gcds-breadcrumbs-item href="/">Home</gcds-breadcrumbs-item>
+        <gcds-breadcrumbs-item href="#">Artemis II</gcds-breadcrumbs-item>
+      </gcds-breadcrumbs>
+    </gcds-header>
+
+    <gcds-container id="main-content" layout="page" tag="main">
+      <section class="mt-400 mb-600">
+        <gcds-heading tag="h1">Artemis II Mission Overview</gcds-heading>
+        <gcds-text>
+          This page was generated from Databricks using a prototype FSDH pipeline that ingests,
+          parses, and visualizes CCSDS OEM trajectory data for Artemis II.
+        </gcds-text>
+      </section>
+
+      <section class="mb-600">
+        <gcds-heading tag="h2">Mission summary</gcds-heading>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Latest Orion timestamp</div>
+            <div class="metric-value">2026-04-10 23:53:05.702000</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Latest speed (km/s)</div>
+            <div class="metric-value">10.992</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">State vector count</div>
+            <div class="metric-value">3211</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Mission duration (hours)</div>
+            <div class="metric-value">212.90</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-600">
+        <gcds-heading tag="h2">Mission metadata</gcds-heading>
+        <table class="meta-table">
+          <tr><th>Object name</th><td>EM2</td></tr>
+          <tr><th>Center name</th><td>EARTH</td></tr>
+          <tr><th>Reference frame</th><td>EME2000</td></tr>
+          <tr><th>Time system</th><td>UTC</td></tr>
+        </table>
+      </section>
+
+      <section class="mb-600">
+        <gcds-heading tag="h2">Trajectory analytics</gcds-heading>
+
+        <div class="chart-block">
+          <gcds-text>Orion speed over mission elapsed time.</gcds-text>
+          <img
+            class="chart-img"
+            src="./assets/orion-speed-over-time.png"
+            alt="Line chart showing Orion speed over mission elapsed time"
+          />
+        </div>
+
+        <div class="chart-block">
+          <gcds-text>Orion distance from origin over mission elapsed time.</gcds-text>
+          <img
+            class="chart-img"
+            src="./assets/orion-distance-over-time.png"
+            alt="Line chart showing Orion distance from origin over mission elapsed time"
+          />
+        </div>
+
+        <div class="chart-block">
+          <gcds-text>Summary values generated from the Gold layer.</gcds-text>
+          <img
+            class="chart-img"
+            src="./assets/orion-summary-card.png"
+            alt="Summary card showing latest Orion timestamp, speed, state vector count, and mission duration"
+          />
+        </div>
+      </section>
+
+      <section class="mb-600">
+        <gcds-heading tag="h2">About this demo</gcds-heading>
+        <gcds-text>
+          This prototype shows how Databricks can be used in FSDH to ingest raw ephemeris-style
+          mission data, transform it into structured tables, and publish static outputs for the web.
+        </gcds-text>
+      </section>
+
+      <gcds-date-modified>2026-04-01</gcds-date-modified>
+    </gcds-container>
+
+    <gcds-footer display="full"></gcds-footer>
+  </body>
 </html>
