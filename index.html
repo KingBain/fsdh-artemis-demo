@@ -161,6 +161,22 @@
           />
         </div>
 
+        <div id="dashboard-content"></div>
+
+        <script type="module">
+          import { DatabricksDashboard } from "https://cdn.jsdelivr.net/npm/@databricks/aibi-client@0.0.0-alpha.7/+esm";
+        
+          const dashboard = new DatabricksDashboard({
+            instanceUrl: "__DATABRICKS_INSTANCE_URL__",
+            workspaceId: "__DATABRICKS_WORKSPACE_ID__",
+            dashboardId: "__DATABRICKS_DASHBOARD_ID__",
+            token: "__DATABRICKS_TOKEN__",
+            container: document.getElementById("dashboard-content")
+          });
+        
+          dashboard.initialize();
+        </script>
+
         <div class="chart-block">
           <gcds-text>Summary values generated from the Gold layer.</gcds-text>
           <img
