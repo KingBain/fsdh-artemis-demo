@@ -3,9 +3,7 @@ name: Deploy static content to Pages
 on:
   push:
     branches: ["main"]
-
   workflow_dispatch:
-
   schedule:
     # Rebuild twice per hour to prevent token expiration gaps (tokens expire in 1hr)
     - cron: "15 * * * *"
@@ -92,7 +90,7 @@ jobs:
 
           params_json="$(echo "$tokeninfo_response" | jq -c 'del(.authorization_details) | with_entries(select(.value != null))')"
 
-          # FIX: This jq command now correctly mimics standard URLSearchParams by joining arrays with commas
+          # Safely encode arrays by repeating the key (e.g. resource=1&resource=2)
           form_body="$(
             jq -rn \
               --argjson params "$params_json" \
@@ -104,8 +102,11 @@ jobs:
                 | to_entries
                 | map(
                     .key as $k
-                    | (if (.value | type) == "array" then (.value | join(",")) else (.value | tostring) end) as $v
-                    | "\($k|@uri)=\($v|@uri)"
+                    | if (.value | type) == "array" then
+                        (.value | map("\($k|@uri)=\(.|tostring|@uri)") | join("&"))
+                      else
+                        "\($k|@uri)=\(.value|tostring|@uri)"
+                      end
                   )
                 | join("&")
               '
