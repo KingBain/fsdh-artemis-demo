@@ -43,9 +43,9 @@ jobs:
           EXTERNAL_VALUE: ${{ vars.DATABRICKS_EXTERNAL_VALUE }}
         run: |
           set -euo pipefail
-      
+
           basic_auth="$(printf '%s:%s' "$SERVICE_PRINCIPAL_ID" "$SERVICE_PRINCIPAL_SECRET" | base64 | tr -d '\n')"
-      
+
           echo "Requesting Databricks all-apis token..."
           oidc_response="$(
             curl --fail-with-body -sS \
@@ -55,17 +55,17 @@ jobs:
               --data-urlencode "grant_type=client_credentials" \
               --data-urlencode "scope=all-apis"
           )"
-      
+
           oidc_token="$(echo "$oidc_response" | jq -r '.access_token')"
-      
+
           if [ -z "$oidc_token" ] || [ "$oidc_token" = "null" ]; then
             echo "Failed to get Databricks all-apis token"
             echo "$oidc_response"
             exit 1
           fi
-      
+
           echo "::add-mask::$oidc_token"
-      
+
           echo "Requesting dashboard tokeninfo..."
           tokeninfo_response="$(
             curl --fail-with-body -sS -G \
@@ -74,17 +74,17 @@ jobs:
               --data-urlencode "external_viewer_id=${EXTERNAL_VIEWER_ID}" \
               --data-urlencode "external_value=${EXTERNAL_VALUE}"
           )"
-      
+
           authorization_details="$(echo "$tokeninfo_response" | jq -c '.authorization_details')"
-      
+
           if [ -z "$authorization_details" ] || [ "$authorization_details" = "null" ]; then
             echo "Failed to get tokeninfo authorization_details"
             echo "$tokeninfo_response"
             exit 1
           fi
-      
+
           echo "Building scoped token form body..."
-      
+
           form_body="$(
             jq -rn \
               --argjson params "$(echo "$tokeninfo_response" | jq -c 'del(.authorization_details)')" \
@@ -98,7 +98,7 @@ jobs:
                 | join("&")
               '
           )"
-      
+
           echo "Requesting Databricks scoped token..."
           scoped_response="$(
             curl --fail-with-body -sS \
@@ -107,24 +107,24 @@ jobs:
               -H "Content-Type: application/x-www-form-urlencoded" \
               --data "$form_body"
           )"
-      
+
           scoped_token="$(echo "$scoped_response" | jq -r '.access_token')"
-      
+
           if [ -z "$scoped_token" ] || [ "$scoped_token" = "null" ]; then
             echo "Failed to get Databricks scoped token"
             echo "$scoped_response"
             exit 1
           fi
-      
+
           echo "::add-mask::$scoped_token"
-      
+
           {
             echo "DATABRICKS_SCOPED_TOKEN=$scoped_token"
             echo "DATABRICKS_INSTANCE_URL=$INSTANCE_URL"
             echo "DATABRICKS_WORKSPACE_ID=$WORKSPACE_ID"
             echo "DATABRICKS_DASHBOARD_ID=$DASHBOARD_ID"
           } >> "$GITHUB_ENV"
-      
+
           echo "Scoped token generated successfully."
 
       - name: Inject Databricks token into static page
