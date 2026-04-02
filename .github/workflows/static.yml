@@ -7,8 +7,9 @@ on:
   workflow_dispatch:
 
   schedule:
-    # Rebuild once per hour, off the top of the hour
-    - cron: "17 * * * *"
+    # Rebuild twice per hour to prevent token expiration gaps (tokens expire in 1hr)
+    - cron: "15 * * * *"
+    - cron: "45 * * * *"
 
 permissions:
   contents: read
@@ -81,14 +82,6 @@ jobs:
               --data-urlencode "external_value=${EXTERNAL_VALUE}"
           )"
 
-          echo "Tokeninfo diagnostics:"
-          echo "$tokeninfo_response" | jq '{
-            keys: (keys),
-            value_types: (with_entries(.value |= type)),
-            authorization_details_count: (.authorization_details | length),
-            non_null_keys: [to_entries[] | select(.value != null) | .key]
-          }'
-
           authorization_details="$(echo "$tokeninfo_response" | jq -c '.authorization_details')"
 
           if [ -z "$authorization_details" ] || [ "$authorization_details" = "null" ]; then
@@ -99,14 +92,7 @@ jobs:
 
           params_json="$(echo "$tokeninfo_response" | jq -c 'del(.authorization_details) | with_entries(select(.value != null))')"
 
-          echo "Scoped token request parameter diagnostics:"
-          echo "$params_json" | jq 'to_entries | map({
-            key: .key,
-            type: (.value | type),
-            length: (.value | tostring | length)
-          })'
-          echo "authorization_details length: $(echo "$authorization_details" | jq -r 'tostring | length')"
-
+          # FIX: This jq command now correctly mimics standard URLSearchParams by joining arrays with commas
           form_body="$(
             jq -rn \
               --argjson params "$params_json" \
@@ -116,15 +102,14 @@ jobs:
                   authorization_details: $authorization_details
                 })
                 | to_entries
-                | map("\(.key|@uri)=\(.value|tostring|@uri)")
+                | map(
+                    .key as $k
+                    | (if (.value | type) == "array" then (.value | join(",")) else (.value | tostring) end) as $v
+                    | "\($k|@uri)=\($v|@uri)"
+                  )
                 | join("&")
               '
           )"
-
-          echo "Final form fields being sent to scoped token endpoint:"
-          echo "$params_json" | jq -r 'to_entries[] | "- \(.key)"'
-          echo "- grant_type"
-          echo "- authorization_details"
 
           scoped_headers="$tmp_dir/scoped_headers.txt"
           scoped_body="$tmp_dir/scoped_body.txt"
@@ -142,19 +127,9 @@ jobs:
               || true
           )"
 
-          echo "Scoped token HTTP status: $scoped_http_code"
-          echo "Scoped token response headers:"
-          sed 's/\r$//' "$scoped_headers" || true
-
-          echo "Scoped token response body:"
-          if [ -s "$scoped_body" ]; then
-            cat "$scoped_body"
-          else
-            echo "<empty>"
-          fi
-
           if [ "$scoped_http_code" != "200" ]; then
-            echo "Scoped token request failed."
+            echo "Scoped token request failed with HTTP $scoped_http_code."
+            cat "$scoped_body"
             exit 1
           fi
 
