@@ -10,7 +10,7 @@ on:
     - cron: "45 * * * *"
 
 permissions:
-  contents: read
+  contents: write  # <-- CHANGED to 'write' so the action can commit the README.md
   pages: write
   id-token: write
 
@@ -29,6 +29,58 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
+      - name: Update README.md with flight data and graphs
+        shell: python
+        run: |
+          import re
+          from pathlib import Path
+
+          # Read the HTML to extract the latest metrics
+          html = Path("index.html").read_text(encoding="utf-8")
+
+          def get_metric(label):
+              safe_label = re.escape(label)
+              match = re.search(f'<div class="metric-label">{{safe_label}}</div>\\s*<div class="metric-value">([^<]+)</div>', html)
+              return match.group(1).strip() if match else "N/A"
+
+          timestamp = get_metric("Latest Orion timestamp")
+          speed = get_metric("Latest speed (km/s)")
+          vectors = get_metric("State vector count")
+          duration = get_metric("Mission duration (hours)")
+
+          # Construct the new README content
+          readme_content = f"""# fsdh-artemis-demo
+
+          Artemis II mission overview generated from Databricks using a prototype FSDH pipeline.
+
+          ## 🚀 Mission Summary
+          - **Latest Orion timestamp:** {timestamp}
+          - **Latest speed:** {speed} km/s
+          - **State vector count:** {vectors}
+          - **Mission duration:** {duration} hours
+
+          ## 📈 Trajectory Analytics
+
+          ### Orion Speed Over Time
+          ![Orion Speed Over Time](assets/orion-speed-over-time.png)
+
+          ### Orion Distance Over Time
+          ![Orion Distance Over Time](assets/orion-distance-over-time.png)
+
+          ### Summary Values
+          ![Orion Summary Card](assets/orion-summary-card.png)
+          """
+
+          Path("README.md").write_text(readme_content, encoding="utf-8")
+
+      - name: Commit and push README.md
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          # Only commit and push if the README actually changed
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: auto-update README.md with flight data and graphs" && git push)
+
       - name: Generate Databricks scoped access token
         id: databricks_token
         shell: bash
