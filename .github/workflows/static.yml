@@ -10,7 +10,7 @@ on:
     - cron: "45 * * * *"
 
 permissions:
-  contents: write  # <-- CHANGED to 'write' so the action can commit the README.md
+  contents: write
   pages: write
   id-token: write
 
@@ -39,8 +39,9 @@ jobs:
           html = Path("index.html").read_text(encoding="utf-8")
 
           def get_metric(label):
-              safe_label = re.escape(label)
-              match = re.search(f'<div class="metric-label">{{safe_label}}</div>\\s*<div class="metric-value">([^<]+)</div>', html)
+              # Fixed f-string interpolation and added \s* to handle any formatting spaces
+              pattern = f'<div class="metric-label">\\s*{re.escape(label)}\\s*</div>\\s*<div class="metric-value">\\s*([^<]+?)\\s*</div>'
+              match = re.search(pattern, html, re.IGNORECASE)
               return match.group(1).strip() if match else "N/A"
 
           timestamp = get_metric("Latest Orion timestamp")
