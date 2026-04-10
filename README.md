@@ -3,10 +3,10 @@
 Artemis II mission overview generated from Databricks using a prototype FSDH pipeline.
 
 ## 🚀 Mission Summary
-- **Latest Orion timestamp:** 2026-04-10 04:45:00
-- **Latest speed:** 1.643 km/s
-- **State vector count:** 2338
-- **Mission duration:** 194.75 hours
+- **Latest Orion timestamp:** 2026-04-10 06:40:00
+- **Latest speed:** 1.732 km/s
+- **State vector count:** 2361
+- **Mission duration:** 196.67 hours
 
 ## 📈 Trajectory Analytics
 
