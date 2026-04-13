@@ -1,5 +1,8 @@
 const strings = {
   en: {
+    demoNoticeTitle: "Demo",
+    demoNoticeBody:
+  "This page is a demonstration / alpha experience. Content, visuals, and data may change.",
     pageTitle: "Artemis II Mission Overview",
     pageDescription:
       "This page presents Artemis II mission data generated from Databricks.",
@@ -34,6 +37,9 @@ const strings = {
     seriesDistance: "Distance"
   },
   fr: {
+    demoNoticeTitle: "Démo",
+    demoNoticeBody:
+      "Cette page est une démonstration en version alpha. Le contenu, les visuels et les données peuvent changer.",
     pageTitle: "Aperçu de la mission Artemis II",
     pageDescription:
       "Cette page présente les données de mission Artemis II générées à partir de Databricks.",
@@ -167,6 +173,12 @@ function applyStaticText(lang) {
 
   const speedCanvas = document.getElementById("speed-chart");
   const distanceCanvas = document.getElementById("distance-chart");
+  const demoNotice = document.getElementById("demo-notice");
+    if (demoNotice) {
+      demoNotice.setAttribute("notice-title", t.demoNoticeTitle);
+      demoNotice.textContent = t.demoNoticeBody;
+    }
+
 
   if (speedCanvas) {
     speedCanvas.setAttribute("aria-label", t.speedAria);
