@@ -4,7 +4,8 @@
 	"name": "Databricks Dev",
 	"image": "mcr.microsoft.com/devcontainers/base:noble",
 	"features": {
-		"ghcr.io/kingbain/devcontainer-features-databricks/databricks-cli:0": {}
+		"ghcr.io/kingbain/devcontainer-features-databricks/databricks-cli:0": {},
+		"ghcr.io/devcontainers/features/python:1": {}
 	},
 	"customizations": {
 		"vscode": {
