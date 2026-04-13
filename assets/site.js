@@ -138,6 +138,7 @@ async function loadMissionData() {
 function applyStaticText(lang) {
   const t = strings[lang];
   document.documentElement.lang = lang;
+  updateHeaderLanguageToggle(lang);
 
   setText("page-title", t.pageTitle);
   setText("page-description", t.pageDescription);
@@ -331,6 +332,25 @@ function renderCharts(data, lang) {
     lang
   });
 }
+
+
+function buildOppositeLanguageUrl(currentLang) {
+  const url = new URL(window.location.href);
+  const nextLang = currentLang === "fr" ? "en" : "fr";
+  url.searchParams.set("lang", nextLang);
+  return url.pathname + url.search + url.hash;
+}
+
+function updateHeaderLanguageToggle(lang) {
+  const header = document.getElementById("site-header");
+  if (!header) {
+    return;
+  }
+
+  header.setAttribute("lang", lang);
+  header.setAttribute("lang-href", buildOppositeLanguageUrl(lang));
+}
+
 
 function applyDynamicData(data, lang) {
   setText(
