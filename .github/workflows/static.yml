@@ -56,13 +56,13 @@ jobs:
 
           Artemis II mission overview generated from Databricks using a prototype FSDH pipeline.
 
-          ## 🚀 Mission Summary
+          ## Mission Summary
           - **Latest Orion timestamp:** {latest_epoch_utc}
           - **Latest speed:** {fmt_float(latest_speed_km_h, 1)} km/h
           - **State vector count:** {state_vector_count}
           - **Mission duration:** {fmt_float(mission_duration_hours, 2)} hours
 
-          ## 🛰️ Mission Metadata
+          ## Mission Metadata
           - **Object name:** {metadata.get('object_name', 'N/A')}
           - **Object ID:** {metadata.get('object_id', 'N/A')}
           - **Center name:** {metadata.get('center_name', 'N/A')}
@@ -71,13 +71,13 @@ jobs:
           - **Start time:** {metadata.get('start_time', 'N/A')}
           - **Stop time:** {metadata.get('stop_time', 'N/A')}
 
-          ## 📈 Trajectory Analytics
+          ## Trajectory Analytics
           Interactive charts are rendered on the website using Chart.js and mission data exported from Databricks.
 
-          ## 🌐 Website
+          ## Website
           [View the live site](https://kingbain.github.io/fsdh-artemis-demo/)
 
-          ## 🛠️ Notes
+          ## Notes
           - The website renders charts from JSON data instead of static chart images.
           - README metrics are generated from `data/mission-data.json`.
           - Site data generated at: {generated_at_utc}
