@@ -55,12 +55,20 @@
         margin-bottom: 2rem;
       }
 
-      .chart-img {
+      .chart-panel {
         width: 100%;
-        height: auto;
+        min-height: 420px;
         border: 1px solid #d7dbe0;
         border-radius: 0.375rem;
         background: #fff;
+        padding: 1rem;
+        box-sizing: border-box;
+      }
+
+      .chart-canvas {
+        width: 100% !important;
+        height: 380px !important;
+        display: block;
       }
 
       .meta-table {
@@ -170,24 +178,28 @@
           <gcds-text id="speed-chart-description">
             Orion speed over mission elapsed time.
           </gcds-text>
-          <img
-            class="chart-img"
-            id="speed-chart-img"
-            src="./assets/orion-speed-over-time.png"
-            alt="Chart of Orion speed over mission elapsed time"
-          />
+          <div class="chart-panel">
+            <canvas
+              class="chart-canvas"
+              id="speed-chart"
+              aria-label="Chart of Orion speed over mission elapsed time"
+              role="img"
+            ></canvas>
+          </div>
         </div>
 
         <div class="chart-block">
           <gcds-text id="distance-chart-description">
             Orion distance from origin over mission elapsed time.
           </gcds-text>
-          <img
-            class="chart-img"
-            id="distance-chart-img"
-            src="./assets/orion-distance-over-time.png"
-            alt="Chart of Orion distance from origin over mission elapsed time"
-          />
+          <div class="chart-panel">
+            <canvas
+              class="chart-canvas"
+              id="distance-chart"
+              aria-label="Chart of Orion distance from origin over mission elapsed time"
+              role="img"
+            ></canvas>
+          </div>
         </div>
       </section>
 
@@ -210,6 +222,7 @@
 
     <gcds-footer display="full"></gcds-footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="./assets/site.js"></script>
   </body>
 </html>
