@@ -24,9 +24,14 @@ const strings = {
     stopTime: "Stop time",
     speedDescription: "Orion speed over mission elapsed time.",
     distanceDescription: "Orion distance from origin over mission elapsed time.",
-    speedAlt: "Chart of Orion speed over mission elapsed time",
-    distanceAlt: "Chart of Orion distance from origin over mission elapsed time",
-    siteGenerated: "Site generated"
+    speedAria: "Chart of Orion speed over mission elapsed time",
+    distanceAria: "Chart of Orion distance from origin over mission elapsed time",
+    siteGenerated: "Site generated",
+    axisMissionElapsedHours: "Mission elapsed hours",
+    axisSpeedKilometresPerHour: "Speed (km/h)",
+    axisDistanceFromOriginKilometres: "Distance from origin (km)",
+    seriesSpeed: "Speed",
+    seriesDistance: "Distance"
   },
   fr: {
     pageTitle: "Aperçu de la mission Artemis II",
@@ -56,13 +61,21 @@ const strings = {
       "Vitesse d’Orion selon le temps écoulé depuis le début de la mission.",
     distanceDescription:
       "Distance d’Orion depuis l’origine selon le temps écoulé depuis le début de la mission.",
-    speedAlt:
+    speedAria:
       "Graphique de la vitesse d’Orion selon le temps écoulé depuis le début de la mission",
-    distanceAlt:
+    distanceAria:
       "Graphique de la distance d’Orion depuis l’origine selon le temps écoulé depuis le début de la mission",
-    siteGenerated: "Site généré"
+    siteGenerated: "Site généré",
+    axisMissionElapsedHours: "Heures écoulées depuis le début de la mission",
+    axisSpeedKilometresPerHour: "Vitesse (km/h)",
+    axisDistanceFromOriginKilometres: "Distance depuis l’origine (km)",
+    seriesSpeed: "Vitesse",
+    seriesDistance: "Distance"
   }
 };
+
+let speedChartInstance = null;
+let distanceChartInstance = null;
 
 function getLang() {
   const langParam = new URLSearchParams(window.location.search).get("lang");
@@ -151,16 +164,172 @@ function applyStaticText(lang) {
   setText("speed-chart-description", t.speedDescription);
   setText("distance-chart-description", t.distanceDescription);
 
-  const speedImg = document.getElementById("speed-chart-img");
-  const distanceImg = document.getElementById("distance-chart-img");
+  const speedCanvas = document.getElementById("speed-chart");
+  const distanceCanvas = document.getElementById("distance-chart");
 
-  if (speedImg) {
-    speedImg.alt = t.speedAlt;
+  if (speedCanvas) {
+    speedCanvas.setAttribute("aria-label", t.speedAria);
   }
 
-  if (distanceImg) {
-    distanceImg.alt = t.distanceAlt;
+  if (distanceCanvas) {
+    distanceCanvas.setAttribute("aria-label", t.distanceAria);
   }
+}
+
+function buildAxisLabel(labelKey, lang) {
+  const t = strings[lang];
+
+  if (labelKey === "missionElapsedHours") {
+    return t.axisMissionElapsedHours;
+  }
+
+  if (labelKey === "speedKilometresPerHour") {
+    return t.axisSpeedKilometresPerHour;
+  }
+
+  if (labelKey === "distanceFromOriginKilometres") {
+    return t.axisDistanceFromOriginKilometres;
+  }
+
+  return labelKey || "";
+}
+
+function destroyExistingCharts() {
+  if (speedChartInstance) {
+    speedChartInstance.destroy();
+    speedChartInstance = null;
+  }
+
+  if (distanceChartInstance) {
+    distanceChartInstance.destroy();
+    distanceChartInstance = null;
+  }
+}
+
+function createLineChart({
+  canvasId,
+  points,
+  datasetLabel,
+  xAxisLabel,
+  yAxisLabel,
+  lang
+}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !Array.isArray(points) || points.length === 0) {
+    return null;
+  }
+
+  const ctx = canvas.getContext("2d");
+
+  return new Chart(ctx, {
+    type: "line",
+    data: {
+      datasets: [
+        {
+          label: datasetLabel,
+          data: points.map((point) => ({
+            x: point.x,
+            y: point.y,
+            epoch_utc: point.epoch_utc
+          })),
+          borderWidth: 3,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.25
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 700
+      },
+      interaction: {
+        mode: "nearest",
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true
+        },
+        tooltip: {
+          callbacks: {
+            title(items) {
+              if (!items || items.length === 0) {
+                return "";
+              }
+
+              const xValue = items[0].raw.x;
+              return `${xAxisLabel}: ${formatNumber(xValue, 2, lang)}`;
+            },
+            label(context) {
+              const point = context.raw;
+              const lines = [
+                `${datasetLabel}: ${formatNumber(point.y, 2, lang)}`
+              ];
+
+              if (point.epoch_utc) {
+                lines.push(`${formatDateForPage(point.epoch_utc, lang)}`);
+              }
+
+              return lines;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: "linear",
+          title: {
+            display: true,
+            text: xAxisLabel
+          },
+          ticks: {
+            callback(value) {
+              return formatNumber(value, 0, lang);
+            }
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: yAxisLabel
+          },
+          ticks: {
+            callback(value) {
+              return formatNumber(value, 0, lang);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderCharts(data, lang) {
+  destroyExistingCharts();
+
+  const speedPoints = data?.charts?.speed?.points || [];
+  const distancePoints = data?.charts?.distance?.points || [];
+
+  speedChartInstance = createLineChart({
+    canvasId: "speed-chart",
+    points: speedPoints,
+    datasetLabel: strings[lang].seriesSpeed,
+    xAxisLabel: buildAxisLabel(data?.charts?.speed?.x_label_key, lang),
+    yAxisLabel: buildAxisLabel(data?.charts?.speed?.y_label_key, lang),
+    lang
+  });
+
+  distanceChartInstance = createLineChart({
+    canvasId: "distance-chart",
+    points: distancePoints,
+    datasetLabel: strings[lang].seriesDistance,
+    xAxisLabel: buildAxisLabel(data?.charts?.distance?.x_label_key, lang),
+    yAxisLabel: buildAxisLabel(data?.charts?.distance?.y_label_key, lang),
+    lang
+  });
 }
 
 function applyDynamicData(data, lang) {
@@ -189,17 +358,6 @@ function applyDynamicData(data, lang) {
   setText("meta-start-time", formatDateForPage(data.metadata.start_time, lang));
   setText("meta-stop-time", formatDateForPage(data.metadata.stop_time, lang));
 
-  const speedImg = document.getElementById("speed-chart-img");
-  const distanceImg = document.getElementById("distance-chart-img");
-
-  if (speedImg && data.charts?.speed?.image_path) {
-    speedImg.src = data.charts.speed.image_path;
-  }
-
-  if (distanceImg && data.charts?.distance?.image_path) {
-    distanceImg.src = data.charts.distance.image_path;
-  }
-
   const generatedAt = formatDateForPage(data.generated_at_utc, lang);
   setText("site-generated-footer", `${strings[lang].siteGenerated}: ${generatedAt}`);
 
@@ -209,6 +367,8 @@ function applyDynamicData(data, lang) {
     dateModified.setAttribute("modifier", rawDate);
     dateModified.textContent = rawDate;
   }
+
+  renderCharts(data, lang);
 }
 
 async function main() {
