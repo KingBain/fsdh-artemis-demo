@@ -1,0 +1,81 @@
+resources:
+  jobs:
+    Publish_Site_Every_2_Hours:
+      name: Publish Site Every 2 Hours
+      trigger:
+        pause_status: PAUSED
+        periodic:
+          interval: 1
+          unit: DAYS
+      tasks:
+        - task_key: Fetch_Data
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis
+              2/00_fetch_live_oem
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+        - task_key: Build_Schema
+          depends_on:
+            - task_key: Fetch_Data
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis 2/01_setup_artemis
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+        - task_key: Ingest_Data
+          depends_on:
+            - task_key: Build_Schema
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis
+              2/02_ingest_oem_raw
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+        - task_key: Parse_Data
+          depends_on:
+            - task_key: Ingest_Data
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis
+              2/03_parse_oem_to_silver
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+        - task_key: Clean_Data
+          depends_on:
+            - task_key: Parse_Data
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis
+              2/04_build_gold_metrics
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+        - task_key: Query_Data
+          depends_on:
+            - task_key: Clean_Data
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis
+              2/05_dashboard_queries
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+        - task_key: Generate_Charts
+          depends_on:
+            - task_key: Query_Data
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis
+              2/06_export_site_charts
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+        - task_key: Generate_HTML
+          depends_on:
+            - task_key: Generate_Charts
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis
+              2/07_generate_site_html
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+        - task_key: Publish_Github
+          depends_on:
+            - task_key: Generate_HTML
+          notebook_task:
+            notebook_path: /Workspace/Users/john.bain@ssc-spc.gc.ca/Artemis
+              2/08_publish_site_to_github
+            source: WORKSPACE
+          existing_cluster_id: 0401-140638-sq7bj7oa
+      queue:
+        enabled: true
