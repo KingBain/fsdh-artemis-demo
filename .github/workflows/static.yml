@@ -4,10 +4,6 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
-  schedule:
-    # Rebuild twice per hour to prevent token expiration gaps (tokens expire in 1hr)
-    - cron: "15 * * * *"
-    - cron: "45 * * * *"
 
 permissions:
   contents: write
@@ -28,209 +24,83 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        
-      - name: Update README.md with flight data and graphs
+
+      - name: Update README.md from mission-data.json
         shell: python
         run: |
-          import re
+          import json
           from pathlib import Path
 
-          # Read the HTML to extract the latest metrics
-          html = Path("index.html").read_text(encoding="utf-8")
+          mission_data_path = Path("data/mission-data.json")
+          if not mission_data_path.exists():
+              raise FileNotFoundError(f"Missing required file: {mission_data_path}")
 
-          def get_metric(label):
-              # Fixed f-string interpolation and added \s* to handle any formatting spaces
-              pattern = f'<div class="metric-label">\\s*{re.escape(label)}\\s*</div>\\s*<div class="metric-value">\\s*([^<]+?)\\s*</div>'
-              match = re.search(pattern, html, re.IGNORECASE)
-              return match.group(1).strip() if match else "N/A"
+          mission_data = json.loads(mission_data_path.read_text(encoding="utf-8"))
 
-          timestamp = get_metric("Latest Orion timestamp")
-          speed = get_metric("Latest speed (km/s)")
-          vectors = get_metric("State vector count")
-          duration = get_metric("Mission duration (hours)")
+          mission = mission_data.get("mission", {})
+          metadata = mission_data.get("metadata", {})
+          generated_at_utc = mission_data.get("generated_at_utc", "N/A")
 
-          # Construct the new README content
+          latest_epoch_utc = mission.get("latest_epoch_utc", "N/A")
+          latest_speed_km_h = mission.get("latest_speed_km_h", "N/A")
+          state_vector_count = mission.get("state_vector_count", "N/A")
+          mission_duration_hours = mission.get("mission_duration_hours", "N/A")
+
+          def fmt_float(value, digits):
+              try:
+                  return f"{float(value):.{digits}f}"
+              except (TypeError, ValueError):
+                  return "N/A"
+
           readme_content = f"""# fsdh-artemis-demo
 
           Artemis II mission overview generated from Databricks using a prototype FSDH pipeline.
 
           ## 🚀 Mission Summary
-          - **Latest Orion timestamp:** {timestamp}
-          - **Latest speed:** {speed} km/s
-          - **State vector count:** {vectors}
-          - **Mission duration:** {duration} hours
+          - **Latest Orion timestamp:** {latest_epoch_utc}
+          - **Latest speed:** {fmt_float(latest_speed_km_h, 1)} km/h
+          - **State vector count:** {state_vector_count}
+          - **Mission duration:** {fmt_float(mission_duration_hours, 2)} hours
+
+          ## 🛰️ Mission Metadata
+          - **Object name:** {metadata.get('object_name', 'N/A')}
+          - **Object ID:** {metadata.get('object_id', 'N/A')}
+          - **Center name:** {metadata.get('center_name', 'N/A')}
+          - **Reference frame:** {metadata.get('reference_frame', 'N/A')}
+          - **Time system:** {metadata.get('time_system', 'N/A')}
+          - **Start time:** {metadata.get('start_time', 'N/A')}
+          - **Stop time:** {metadata.get('stop_time', 'N/A')}
 
           ## 📈 Trajectory Analytics
+          Interactive charts are rendered on the website using Chart.js and mission data exported from Databricks.
 
-          ### Orion Speed Over Time
-          ![Orion Speed Over Time](assets/orion-speed-over-time.png)
+          ## 🌐 Website
+          [View the live site](https://kingbain.github.io/fsdh-artemis-demo/)
 
-          ### Orion Distance Over Time
-          ![Orion Distance Over Time](assets/orion-distance-over-time.png)
-
-          ### Summary Values
-          ![Orion Summary Card](assets/orion-summary-card.png)
+          ## 🛠️ Notes
+          - The website renders charts from JSON data instead of static chart images.
+          - README metrics are generated from `data/mission-data.json`.
+          - Site data generated at: {generated_at_utc}
           """
 
-          Path("README.md").write_text(readme_content, encoding="utf-8")
+          Path("README.md").write_text(readme_content.strip() + "\n", encoding="utf-8")
 
       - name: Commit and push README.md
+        shell: bash
         run: |
+          set -euo pipefail
+
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add README.md
-          # Only commit and push if the README actually changed
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: auto-update README.md with flight data and graphs" && git push)
 
-      - name: Generate Databricks scoped access token
-        id: databricks_token
-        shell: bash
-        env:
-          INSTANCE_URL: ${{ vars.DATABRICKS_INSTANCE_URL }}
-          WORKSPACE_ID: ${{ vars.DATABRICKS_WORKSPACE_ID }}
-          DASHBOARD_ID: ${{ vars.DATABRICKS_DASHBOARD_ID }}
-          SERVICE_PRINCIPAL_ID: ${{ vars.DATABRICKS_SERVICE_PRINCIPAL_ID }}
-          SERVICE_PRINCIPAL_SECRET: ${{ secrets.DATABRICKS_SERVICE_PRINCIPAL_SECRET }}
-          EXTERNAL_VIEWER_ID: ${{ vars.DATABRICKS_EXTERNAL_VIEWER_ID }}
-          EXTERNAL_VALUE: ${{ vars.DATABRICKS_EXTERNAL_VALUE }}
-        run: |
-          set -euo pipefail
-
-          INSTANCE_URL="${INSTANCE_URL%/}"
-
-          tmp_dir="$(mktemp -d)"
-          trap 'rm -rf "$tmp_dir"' EXIT
-
-          basic_auth="$(printf '%s:%s' "$SERVICE_PRINCIPAL_ID" "$SERVICE_PRINCIPAL_SECRET" | base64 | tr -d '\n')"
-
-          echo "Requesting Databricks all-apis token..."
-          oidc_response="$(
-            curl -sS \
-              -X POST "${INSTANCE_URL}/oidc/v1/token" \
-              -H "Authorization: Basic ${basic_auth}" \
-              -H "Content-Type: application/x-www-form-urlencoded" \
-              --data-urlencode "grant_type=client_credentials" \
-              --data-urlencode "scope=all-apis"
-          )"
-
-          oidc_token="$(echo "$oidc_response" | jq -r '.access_token')"
-
-          if [ -z "$oidc_token" ] || [ "$oidc_token" = "null" ]; then
-            echo "Failed to get Databricks all-apis token"
-            echo "$oidc_response"
-            exit 1
+          if git diff --cached --quiet; then
+            echo "No README changes to commit."
+          else
+            git commit -m "docs: auto-update README.md from mission data"
+            git push
           fi
-
-          echo "::add-mask::$oidc_token"
-          echo "All-apis token acquired."
-
-          echo "Requesting dashboard tokeninfo..."
-          tokeninfo_response="$(
-            curl -sS -G \
-              "${INSTANCE_URL}/api/2.0/lakeview/dashboards/${DASHBOARD_ID}/published/tokeninfo" \
-              -H "Authorization: Bearer ${oidc_token}" \
-              --data-urlencode "external_viewer_id=${EXTERNAL_VIEWER_ID}" \
-              --data-urlencode "external_value=${EXTERNAL_VALUE}"
-          )"
-
-          authorization_details="$(echo "$tokeninfo_response" | jq -c '.authorization_details')"
-
-          if [ -z "$authorization_details" ] || [ "$authorization_details" = "null" ]; then
-            echo "Failed to get tokeninfo authorization_details"
-            echo "$tokeninfo_response"
-            exit 1
-          fi
-
-          params_json="$(echo "$tokeninfo_response" | jq -c 'del(.authorization_details) | with_entries(select(.value != null))')"
-
-          # Safely encode arrays by repeating the key (e.g. resource=1&resource=2)
-          form_body="$(
-            jq -rn \
-              --argjson params "$params_json" \
-              --arg authorization_details "$authorization_details" '
-                ($params + {
-                  grant_type: "client_credentials",
-                  authorization_details: $authorization_details
-                })
-                | to_entries
-                | map(
-                    .key as $k
-                    | if (.value | type) == "array" then
-                        (.value | map("\($k|@uri)=\(.|tostring|@uri)") | join("&"))
-                      else
-                        "\($k|@uri)=\(.value|tostring|@uri)"
-                      end
-                  )
-                | join("&")
-              '
-          )"
-
-          scoped_headers="$tmp_dir/scoped_headers.txt"
-          scoped_body="$tmp_dir/scoped_body.txt"
-
-          echo "Requesting Databricks scoped token..."
-          scoped_http_code="$(
-            curl -sS \
-              -D "$scoped_headers" \
-              -o "$scoped_body" \
-              -w "%{http_code}" \
-              -X POST "${INSTANCE_URL}/oidc/v1/token" \
-              -H "Authorization: Basic ${basic_auth}" \
-              -H "Content-Type: application/x-www-form-urlencoded" \
-              --data "$form_body" \
-              || true
-          )"
-
-          if [ "$scoped_http_code" != "200" ]; then
-            echo "Scoped token request failed with HTTP $scoped_http_code."
-            cat "$scoped_body"
-            exit 1
-          fi
-
-          scoped_response="$(cat "$scoped_body")"
-          scoped_token="$(echo "$scoped_response" | jq -r '.access_token')"
-
-          if [ -z "$scoped_token" ] || [ "$scoped_token" = "null" ]; then
-            echo "Scoped token response did not contain access_token"
-            echo "$scoped_response"
-            exit 1
-          fi
-
-          echo "::add-mask::$scoped_token"
-
-          {
-            echo "DATABRICKS_SCOPED_TOKEN=$scoped_token"
-            echo "DATABRICKS_INSTANCE_URL=$INSTANCE_URL"
-            echo "DATABRICKS_WORKSPACE_ID=$WORKSPACE_ID"
-            echo "DATABRICKS_DASHBOARD_ID=$DASHBOARD_ID"
-          } >> "$GITHUB_ENV"
-
-          echo "Scoped token generated successfully."
-
-      - name: Inject Databricks token into static page
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          python3 <<'PY'
-          from pathlib import Path
-          import os
-
-          index_path = Path("index.html")
-          html = index_path.read_text(encoding="utf-8")
-
-          replacements = {
-              "__DATABRICKS_INSTANCE_URL__": os.environ["DATABRICKS_INSTANCE_URL"],
-              "__DATABRICKS_WORKSPACE_ID__": os.environ["DATABRICKS_WORKSPACE_ID"],
-              "__DATABRICKS_DASHBOARD_ID__": os.environ["DATABRICKS_DASHBOARD_ID"],
-              "__DATABRICKS_TOKEN__": os.environ["DATABRICKS_SCOPED_TOKEN"],
-          }
-
-          for old, new in replacements.items():
-              html = html.replace(old, new)
-
-          index_path.write_text(html, encoding="utf-8")
-          PY
 
       - name: Setup Pages
         uses: actions/configure-pages@v6
