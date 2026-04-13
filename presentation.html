@@ -189,10 +189,84 @@
 
       .media-frame img {
         width: 100%;
+        max-height: 320px;
+        object-fit: contain;
         height: auto;
         display: block;
         border-radius: 12px;
         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+      }
+
+      .lightbox-trigger {
+        cursor: zoom-in;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .lightbox-trigger:hover {
+        transform: scale(1.01);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.36);
+      }
+
+      #lightbox-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.88);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 3vh 3vw;
+        z-index: 1000;
+      }
+
+      #lightbox-overlay.visible {
+        display: flex;
+      }
+
+      #lightbox-content {
+        position: relative;
+        max-width: 94vw;
+        max-height: 94vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #lightbox-image {
+        max-width: 94vw;
+        max-height: 88vh;
+        width: auto;
+        height: auto;
+        display: block;
+        border-radius: 12px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+        background: #111;
+      }
+
+      #lightbox-close {
+        position: absolute;
+        top: -14px;
+        right: -14px;
+        width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.92);
+        color: #111;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      }
+
+      #lightbox-close:hover {
+        background: white;
+      }
+
+      #lightbox-caption {
+        margin-top: 0.75rem;
+        text-align: center;
+        font-size: 0.75rem;
+        color: #d8e2ee;
       }
 
       .placeholder {
@@ -474,18 +548,20 @@
           </div>
 
           <div class="media-frame">
-            <!-- Replace with your real file path -->
             <img
+              class="lightbox-trigger"
               src="./assets/artemis-dashboard-screenshot.png"
               alt="Screenshot of the Artemis II mission monitoring dashboard"
+              data-fullsrc="./assets/artemis-dashboard-screenshot.png"
+              data-caption="Artemis II live dashboard showing mission KPIs and trajectory analytics"
               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
             />
             <div class="placeholder" style="display: none;">
               Dashboard screenshot placeholder<br />
-              <span class="small">Expected file: ./images/artemis-dashboard-screenshot.png</span>
+              <span class="small">Expected file: ./assets/artemis-dashboard-screenshot.png</span>
             </div>
             <div class="caption">
-              Suggested visual: dashboard screenshot showing KPIs and live mission charts.
+              Click image to enlarge
             </div>
           </div>
 
@@ -585,18 +661,20 @@
           </div>
 
           <div class="media-frame">
-            <!-- Replace with your real file path -->
             <img
+              class="lightbox-trigger"
               src="./assets/artemis-cost-chart.svg"
               alt="Cost chart for the Artemis II monitoring workload"
+              data-fullsrc="./assets/artemis-cost-chart.svg"
+              data-caption="Cost profile showing setup spike, mission runtime, and clean shutdown"
               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
             />
             <div class="placeholder" style="display: none;">
               Cost chart placeholder<br />
-              <span class="small">Expected file: ./images/artemis-cost-chart.svg</span>
+              <span class="small">Expected file: ./assets/artemis-cost-chart.svg</span>
             </div>
             <div class="caption">
-              Suggested visual: cost trend showing initial setup spike, stable mission run, and end-of-life shutdown.
+              Click image to enlarge
             </div>
           </div>
 
@@ -664,6 +742,16 @@
       <div id="notes-content">No notes for this slide.</div>
     </div>
 
+    <div id="lightbox-overlay" aria-hidden="true">
+      <div id="lightbox-content">
+        <button id="lightbox-close" aria-label="Close image">×</button>
+        <div>
+          <img id="lightbox-image" src="" alt="" />
+          <div id="lightbox-caption"></div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
     <script>
@@ -709,6 +797,52 @@
         ) {
           event.preventDefault();
           toggleNotesPanel();
+        }
+      });
+
+      const lightboxOverlay = document.getElementById("lightbox-overlay");
+      const lightboxImage = document.getElementById("lightbox-image");
+      const lightboxCaption = document.getElementById("lightbox-caption");
+      const lightboxClose = document.getElementById("lightbox-close");
+
+      function openLightbox(src, alt, caption) {
+        lightboxImage.src = src;
+        lightboxImage.alt = alt || "";
+        lightboxCaption.textContent = caption || "";
+        lightboxOverlay.classList.add("visible");
+        lightboxOverlay.setAttribute("aria-hidden", "false");
+      }
+
+      function closeLightbox() {
+        lightboxOverlay.classList.remove("visible");
+        lightboxOverlay.setAttribute("aria-hidden", "true");
+        lightboxImage.src = "";
+        lightboxImage.alt = "";
+        lightboxCaption.textContent = "";
+      }
+
+      document.querySelectorAll(".lightbox-trigger").forEach((img) => {
+        img.addEventListener("click", function () {
+          openLightbox(
+            this.dataset.fullsrc || this.src,
+            this.alt,
+            this.dataset.caption || ""
+          );
+        });
+      });
+
+      lightboxClose.addEventListener("click", closeLightbox);
+
+      lightboxOverlay.addEventListener("click", function (event) {
+        if (event.target === lightboxOverlay) {
+          closeLightbox();
+        }
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && lightboxOverlay.classList.contains("visible")) {
+          event.preventDefault();
+          closeLightbox();
         }
       });
     </script>
