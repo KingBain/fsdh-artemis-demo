@@ -173,11 +173,20 @@ function applyStaticText(lang) {
 
   const speedCanvas = document.getElementById("speed-chart");
   const distanceCanvas = document.getElementById("distance-chart");
+
+
   const demoNotice = document.getElementById("demo-notice");
-    if (demoNotice) {
-      demoNotice.setAttribute("notice-title", t.demoNoticeTitle);
-      demoNotice.textContent = t.demoNoticeBody;
-    }
+  const demoNoticeBody = document.getElementById("demo-notice-body");
+
+  if (demoNotice) {
+    demoNotice.setAttribute("notice-title", t.demoNoticeTitle);
+    demoNotice.setAttribute("lang", lang);
+  }
+
+  if (demoNoticeBody) {
+    demoNoticeBody.textContent = t.demoNoticeBody;
+  }
+
 
 
   if (speedCanvas) {
