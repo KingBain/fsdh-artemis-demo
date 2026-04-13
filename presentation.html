@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Artemis II Mission Monitoring with FSDH</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+
+    <style>
+      :root {
+        --accent: #67b7ff;
+        --accent-2: #ffd166;
+        --good: #72e3a6;
+        --muted: #9fb3c8;
+      }
+
+      .reveal {
+        font-size: 34px;
+      }
+
+      .reveal h1, .reveal h2, .reveal h3 {
+        text-transform: none;
+        letter-spacing: -0.02em;
+      }
+
+      .reveal h1 {
+        font-size: 2.1em;
+      }
+
+      .reveal h2 {
+        font-size: 1.5em;
+        color: var(--accent);
+      }
+
+      .reveal p, .reveal li {
+        line-height: 1.35;
+      }
+
+      .reveal ul.tight li {
+        margin: 0.25em 0;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 0.9em;
+      }
+
+      .accent { color: var(--accent); }
+      .accent-2 { color: var(--accent-2); }
+      .good { color: var(--good); }
+      .muted { color: var(--muted); }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.4rem;
+        align-items: start;
+      }
+
+      .three-col {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .card {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 20px;
+        padding: 0.9rem 1rem;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+      }
+
+      .card h3 {
+        margin-top: 0;
+        font-size: 0.9em;
+        color: var(--accent-2);
+      }
+
+      .big-stat {
+        font-size: 2em;
+        font-weight: 700;
+        color: var(--good);
+      }
+
+      .kicker {
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.48em;
+        color: var(--accent-2);
+        margin-bottom: 0.4rem;
+      }
+
+      .flow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        justify-content: center;
+        align-items: center;
+        margin-top: 1rem;
+      }
+
+      .node {
+        background: rgba(103, 183, 255, 0.14);
+        border: 1px solid rgba(103, 183, 255, 0.4);
+        border-radius: 999px;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.65em;
+      }
+
+      .arrow {
+        color: var(--accent-2);
+        font-size: 0.8em;
+      }
+
+      .quote {
+        font-size: 1.05em;
+        line-height: 1.45;
+        color: #fff;
+        border-left: 4px solid var(--accent);
+        padding-left: 0.8rem;
+        margin-top: 1rem;
+      }
+
+      .small {
+        font-size: 0.62em;
+      }
+
+      .centered {
+        text-align: center;
+      }
+
+      .cost-box {
+        font-size: 1.1em;
+        text-align: center;
+        padding: 1.1rem;
+      }
+
+      .slide-footer {
+        position: absolute;
+        bottom: 18px;
+        right: 24px;
+        font-size: 0.36em;
+        color: rgba(255,255,255,0.45);
+      }
+
+      #notes-panel {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        max-height: 34vh;
+        overflow: auto;
+        background: rgba(10, 14, 22, 0.96);
+        color: #f3f6fb;
+        border-top: 2px solid rgba(103, 183, 255, 0.5);
+        padding: 16px 20px;
+        z-index: 40;
+        display: none;
+        box-shadow: 0 -12px 30px rgba(0,0,0,0.35);
+      }
+
+      #notes-panel.visible {
+        display: block;
+      }
+
+      #notes-panel h3 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        color: var(--accent-2);
+      }
+
+      #notes-content {
+        font-size: 16px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+
+      #notes-hint {
+        position: fixed;
+        left: 18px;
+        bottom: 14px;
+        z-index: 30;
+        font-size: 12px;
+        color: rgba(255,255,255,0.55);
+        background: rgba(0,0,0,0.28);
+        padding: 6px 10px;
+        border-radius: 999px;
+      }
+
+      @media (max-width: 900px) {
+        .two-col, .three-col {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <div class="kicker">FSDH + Databricks + Artemis II</div>
+          <h1>Artemis II Mission Monitoring with FSDH</h1>
+          <p class="subtitle">From idea to production in about a day</p>
+          <div class="quote">
+            We rapidly built a live mission-monitoring pipeline for Artemis II, ran it for the full mission,
+            published it to the web, and decommissioned it once the mission ended.
+          </div>
+          <div class="slide-footer">1</div>
+          <aside class="notes">
+            Open with the headline: this was built fast, it was real, and it was temporary by design.
+            Stress that this was not a mockup. The site and dashboard were fed by real mission trajectory data during the mission window.
+            The point of the presentation is not just that the project was cool. The point is that FSDH and Databricks let us stand up something production-like very quickly.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Why we did this</h2>
+          <div class="two-col">
+            <div class="card">
+              <h3>Primary goals</h3>
+              <ul class="tight">
+                <li>Show <span class="accent">Databricks capability</span> in a real scenario</li>
+                <li>Demonstrate how quickly <span class="accent">FSDH</span> can move an idea into production</li>
+                <li>Build something useful and visible during a high-interest public event</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Why Artemis II</h3>
+              <ul class="tight">
+                <li>High public interest</li>
+                <li>Live mission data</li>
+                <li>A chance for Canadians to follow a Canadian in space</li>
+              </ul>
+            </div>
+          </div>
+          <div class="slide-footer">2</div>
+          <aside class="notes">
+            Explain that this started as a capability demonstration and a fast experiment. Artemis II gave us the perfect use case because it had public attention, a Canadian connection, and a mission timeline that forced us to move quickly.
+            Frame the project as a proving ground for platform agility.
+          </aside>
+        </section>
+
+        <section>
+          <h2>The audience</h2>
+          <div class="three-col">
+            <div class="card centered">
+              <h3>Government stakeholders</h3>
+              <p>Show the platform can deliver something real, quickly.</p>
+            </div>
+            <div class="card centered">
+              <h3>Technical teams</h3>
+              <p>Show an end-to-end data pipeline, not just a chart.</p>
+            </div>
+            <div class="card centered">
+              <h3>Possible CSA viewers</h3>
+              <p>Connect the demo to a mission Canadians actually cared about.</p>
+            </div>
+          </div>
+          <p class="subtitle" style="margin-top:1rem;">Mixed audience: executive, technical, and mission-interested.</p>
+          <div class="slide-footer">3</div>
+          <aside class="notes">
+            Tell the audience this deck is intentionally balanced. Executives care about speed, cost, and governance. Technical people care about architecture and automation. Mission-interested viewers care that it was live and relevant.
+          </aside>
+        </section>
+
+        <section>
+          <h2>What we built</h2>
+          <div class="flow">
+            <div class="node">NASA / OEM data</div>
+            <div class="arrow">→</div>
+            <div class="node">Fetch</div>
+            <div class="arrow">→</div>
+            <div class="node">Bronze</div>
+            <div class="arrow">→</div>
+            <div class="node">Silver</div>
+            <div class="arrow">→</div>
+            <div class="node">Gold</div>
+            <div class="arrow">→</div>
+            <div class="node">Charts + HTML</div>
+            <div class="arrow">→</div>
+            <div class="node">GitHub Pages</div>
+          </div>
+          <div class="two-col" style="margin-top:1.2rem;">
+            <div class="card">
+              <h3>Data side</h3>
+              <ul class="tight">
+                <li>OEM ingestion</li>
+                <li>Parsing and transformation</li>
+                <li>Metrics and analytics</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Publishing side</h3>
+              <ul class="tight">
+                <li>Static site generation</li>
+                <li>Automated GitHub publishing</li>
+                <li>Public-facing monitoring experience</li>
+              </ul>
+            </div>
+          </div>
+          <div class="slide-footer">4</div>
+          <aside class="notes">
+            This is the architecture summary slide. Explain that OEM means Orbit Ephemeris Message, a text-based space data format that contains timestamps plus position and velocity state vectors.
+            Say that the API portion of the solution fetched the live data source, saved it into the landing area, then the notebooks processed it through Bronze, Silver, and Gold.
+            Bronze is raw ingestion: file-level and line-level capture, so we preserve the original source.
+            Silver is parsed and structured data: metadata, timestamps, position, velocity.
+            Gold is business-ready or presentation-ready data: speed over time, mission duration, latest known state, summary metrics, and views for the site.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Built with velocity</h2>
+          <div class="three-col">
+            <div class="card centered cost-box">
+              <div class="kicker">Build time</div>
+              <div class="big-stat">~1 day</div>
+              <div class="small muted">from concept to working pipeline</div>
+            </div>
+            <div class="card centered cost-box">
+              <div class="kicker">Runtime</div>
+              <div class="big-stat">~1 week</div>
+              <div class="small muted">for the full Artemis II mission</div>
+            </div>
+            <div class="card centered cost-box">
+              <div class="kicker">Outcome</div>
+              <div class="big-stat">Live</div>
+              <div class="small muted">real mission tracking on the web</div>
+            </div>
+          </div>
+          <div class="quote">
+            The platform let us move fast without waiting for a heavy project setup cycle.
+          </div>
+          <div class="slide-footer">5</div>
+          <aside class="notes">
+            This is where you sell speed. Emphasize that the important point is not just coding fast. It is that the platform let us move from idea to governed implementation quickly enough to matter while the mission was still happening.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Biggest challenge</h2>
+          <div class="two-col">
+            <div class="card">
+              <h3>Hard part</h3>
+              <ul class="tight">
+                <li>Getting the data</li>
+                <li>Building the pipelines</li>
+                <li>Making the full chain reliable enough to run throughout the mission</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>What mattered</h3>
+              <ul class="tight">
+                <li>Not just displaying data</li>
+                <li>Ingesting it cleanly</li>
+                <li>Transforming it consistently</li>
+                <li>Publishing it automatically</li>
+              </ul>
+            </div>
+          </div>
+          <div class="slide-footer">6</div>
+          <aside class="notes">
+            Explain that the tricky part was not making a pretty chart. It was data acquisition plus pipeline reliability.
+            Mention that once the feed arrived, the workflow had to fetch the source, ingest it, parse it, compute metrics, generate site artifacts, and publish, all without manual intervention.
+          </aside>
+        </section>
+
+        <section>
+          <h2>The wow moment</h2>
+          <div class="card centered">
+            <p style="font-size:1.2em; line-height:1.5;">
+              Seeing <span class="accent">live data update</span> and building something that let
+              <span class="accent-2">Canadians watch a Canadian in space</span>.
+            </p>
+          </div>
+          <div class="two-col" style="margin-top:1rem;">
+            <div class="card">
+              <h3>Emotion</h3>
+              <p>This was not just a technical exercise. It connected the platform to a real mission people cared about.</p>
+            </div>
+            <div class="card">
+              <h3>Proof</h3>
+              <p>The charts updating during the mission made the capability tangible immediately.</p>
+            </div>
+          </div>
+          <div class="slide-footer">7</div>
+          <aside class="notes">
+            Slow down here. This is the emotional center of the deck. You are connecting platform capability to public relevance and national pride, not just engineering output.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Why FSDH worked here</h2>
+          <div class="three-col">
+            <div class="card">
+              <h3>Speed</h3>
+              <p>We moved from idea to production quickly.</p>
+            </div>
+            <div class="card">
+              <h3>Governance</h3>
+              <p>Governance was internalized into the platform instead of bolted on later.</p>
+            </div>
+            <div class="card">
+              <h3>Practicality</h3>
+              <p>We built only what we needed, when we needed it.</p>
+            </div>
+          </div>
+          <div class="quote">
+            FSDH gave us a governed environment that still moved with startup-like velocity.
+          </div>
+          <div class="slide-footer">8</div>
+          <aside class="notes">
+            Explain what you mean by governance here. You do not mean paperwork. You mean the platform already had the patterns, access boundaries, and tooling needed so the team could focus on solving the problem instead of inventing a compliant environment from scratch.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Run lean, shut down cleanly</h2>
+          <div class="two-col">
+            <div class="card">
+              <h3>Cost discipline</h3>
+              <p>The environment was created for the mission, used for the mission, and then decommissioned to save costs.</p>
+            </div>
+            <div class="card">
+              <h3>Why that matters</h3>
+              <p>This was not just fast delivery. It was controlled delivery with a clear end-of-life.</p>
+            </div>
+          </div>
+          <div class="quote">
+            We proved the platform can support fast experimentation without creating a long-term cost burden.
+          </div>
+          <div class="slide-footer">9</div>
+          <aside class="notes">
+            Tie this back to the cost chart. The message is not only that the spend was reasonable. It is that the workload was intentionally temporary. The platform supported creation, operation, and clean teardown.
+          </aside>
+        </section>
+
+        <section>
+          <h2>What this proved</h2>
+          <ul class="tight">
+            <li>FSDH can take a high-interest idea from <span class="accent">inception to production quickly</span>.</li>
+            <li>Databricks can support <span class="accent">real-world live data workflows</span>, not just offline analytics.</li>
+            <li>Governance and velocity do <span class="accent-2">not</span> have to be in conflict.</li>
+            <li>The platform can be created, used, and decommissioned with discipline.</li>
+          </ul>
+          <div class="slide-footer">10</div>
+          <aside class="notes">
+            Summarize the technical proof points. Mention that Gold data is what made the public presentation layer simple. Instead of the website understanding raw OEM files, it consumed already-modeled outputs like summary metrics and chart-friendly series.
+          </aside>
+        </section>
+
+        <section>
+          <h2>The takeaway</h2>
+          <div class="card centered">
+            <p style="font-size:1.25em; line-height:1.5;">
+              <span class="good">FSDH is the tool of choice</span><br/>
+              to quickly move an idea from <span class="accent">inception</span> to <span class="accent">production</span>.
+            </p>
+          </div>
+          <div class="quote">
+            This project was a cool experiment. More importantly, it was a working proof of platform capability.
+          </div>
+          <div class="slide-footer">11</div>
+          <aside class="notes">
+            End with confidence. The conclusion is not just that the demo succeeded. The conclusion is that the platform demonstrated a way of working: rapid, governed, real, and disposable when appropriate.
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <div id="notes-hint">Press N to toggle presenter notes</div>
+    <div id="notes-panel" aria-live="polite">
+      <h3>Presenter notes</h3>
+      <div id="notes-content">No notes for this slide.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: false,
+        transition: 'fade',
+        backgroundTransition: 'fade',
+        controls: true,
+        progress: true,
+        center: true,
+        plugins: [ RevealNotes ]
+      });
+
+      const notesPanel = document.getElementById('notes-panel');
+      const notesContent = document.getElementById('notes-content');
+      let notesVisible = false;
+
+      function updateNotesPanel() {
+        const currentSlide = Reveal.getCurrentSlide();
+        const notes = currentSlide ? currentSlide.querySelector('aside.notes') : null;
+        const text = notes ? notes.textContent.trim() : 'No notes for this slide.';
+        notesContent.textContent = text || 'No notes for this slide.';
+      }
+
+      function toggleNotesPanel() {
+        notesVisible = !notesVisible;
+        notesPanel.classList.toggle('visible', notesVisible);
+        if (notesVisible) {
+          updateNotesPanel();
+        }
+      }
+
+      Reveal.on('ready', updateNotesPanel);
+      Reveal.on('slidechanged', updateNotesPanel);
+
+      document.addEventListener('keydown', function (event) {
+        if ((event.key === 'n' || event.key === 'N') && !event.metaKey && !event.ctrlKey && !event.altKey) {
+          event.preventDefault();
+          toggleNotesPanel();
+        }
+      });
+    </script>
+  </body>
+</html>
