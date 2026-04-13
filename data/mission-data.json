@@ -1,0 +1,36 @@
+{
+  "generated_at_utc": "2026-04-13T15:55:38Z",
+  "mission": {
+    "title": "Artemis II Mission Overview",
+    "latest_epoch_utc": "2026-04-10 23:50:00",
+    "latest_speed_km_s": 10.651153676860364,
+    "latest_speed_km_h": 38344.15323669731,
+    "state_vector_count": 2567,
+    "mission_duration_hours": 217.43333333333334
+  },
+  "metadata": {
+    "object_name": "ARTEMIS II",
+    "object_id": "-1024",
+    "center_name": "EARTH",
+    "reference_frame": "J2000",
+    "time_system": "UTC",
+    "start_time": "2026-04-02T02:00:00.000",
+    "stop_time": "2026-04-10T23:50:00.000"
+  },
+  "charts": {
+    "speed": {
+      "image_path": "./assets/orion-speed-over-time.png",
+      "x_key": "mission_elapsed_hours",
+      "y_key": "speed_km_h",
+      "x_unit": "hours",
+      "y_unit": "km/h"
+    },
+    "distance": {
+      "image_path": "./assets/orion-distance-over-time.png",
+      "x_key": "mission_elapsed_hours",
+      "y_key": "distance_from_origin_km",
+      "x_unit": "hours",
+      "y_unit": "km"
+    }
+  }
+}
