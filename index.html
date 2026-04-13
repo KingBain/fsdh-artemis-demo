@@ -88,31 +88,23 @@
         padding-bottom: 1rem;
         color: #333;
       }
-      #dashboard-content {
-        width: 100%;
-        /* Adjust this value based on how much screen space you want the chart to take */
-        height: 800px; 
+
+      .lang-switch {
         display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        border: 1px solid #d7dbe0;
-        border-radius: 0.375rem;
-        background: #fff;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1rem;
       }
 
-      /* This targets the iframe/component created by the SDK and forces it to fill the div */
-      #dashboard-content > * {
-        flex: 1;
-        width: 100% !important;
-        height: 100% !important;
-        border: none !important;
+      .loading-state,
+      .error-state {
+        margin-top: 1rem;
       }
-
     </style>
   </head>
 
   <body>
-    <gcds-header lang-href="#fr" skip-to-href="#main-content">
+    <gcds-header lang-href="?lang=fr" skip-to-href="#main-content">
       <gcds-breadcrumbs slot="breadcrumb">
         <gcds-breadcrumbs-item href="/">Home</gcds-breadcrumbs-item>
         <gcds-breadcrumbs-item href="#">Artemis II</gcds-breadcrumbs-item>
@@ -120,112 +112,104 @@
     </gcds-header>
 
     <gcds-container id="main-content" layout="page" tag="main">
+      <div class="lang-switch">
+        <gcds-link href="?lang=en">English</gcds-link>
+        <gcds-link href="?lang=fr">Français</gcds-link>
+      </div>
+
       <section class="mt-400 mb-600">
-        <gcds-heading tag="h1">Artemis II Mission Overview</gcds-heading>
-        <gcds-text>
-          This page was generated from Databricks using a prototype FSDH pipeline that ingests,
-          parses, and visualizes CCSDS OEM trajectory data for Artemis II.
+        <gcds-heading tag="h1" id="page-title">Artemis II Mission Overview</gcds-heading>
+        <gcds-text id="page-description">
+          This page presents Artemis II mission data generated from Databricks.
         </gcds-text>
+        <gcds-text class="loading-state" id="loading-state">
+          Loading latest mission data…
+        </gcds-text>
+        <gcds-text class="error-state" id="error-state" style="display: none;"></gcds-text>
       </section>
 
       <section class="mb-600">
-        <gcds-heading tag="h2">Mission summary</gcds-heading>
+        <gcds-heading tag="h2" id="summary-heading">Mission summary</gcds-heading>
         <div class="metrics-grid">
           <div class="metric-card">
-            <div class="metric-label">Latest Orion timestamp</div>
-            <div class="metric-value">2026-04-10 23:50:00</div>
+            <div class="metric-label" id="label-latest-timestamp">Latest Orion timestamp</div>
+            <div class="metric-value" id="metric-latest-timestamp">--</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">Latest speed (km/s)</div>
-            <div class="metric-value">10.651</div>
+            <div class="metric-label" id="label-latest-speed">Latest speed (km/h)</div>
+            <div class="metric-value" id="metric-latest-speed">--</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">State vector count</div>
-            <div class="metric-value">2567</div>
+            <div class="metric-label" id="label-state-vectors">State vector count</div>
+            <div class="metric-value" id="metric-state-vectors">--</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">Mission duration (hours)</div>
-            <div class="metric-value">213.83</div>
+            <div class="metric-label" id="label-mission-duration">Mission duration (hours)</div>
+            <div class="metric-value" id="metric-mission-duration">--</div>
           </div>
         </div>
       </section>
 
       <section class="mb-600">
-        <gcds-heading tag="h2">Mission metadata</gcds-heading>
+        <gcds-heading tag="h2" id="metadata-heading">Mission metadata</gcds-heading>
         <table class="meta-table">
-          <tr><th>Object name</th><td>ARTEMIS II</td></tr>
-          <tr><th>Center name</th><td>EARTH</td></tr>
-          <tr><th>Reference frame</th><td>J2000</td></tr>
-          <tr><th>Time system</th><td>UTC</td></tr>
+          <tr><th id="meta-object-name-label">Object name</th><td id="meta-object-name">--</td></tr>
+          <tr><th id="meta-object-id-label">Object ID</th><td id="meta-object-id">--</td></tr>
+          <tr><th id="meta-center-name-label">Center name</th><td id="meta-center-name">--</td></tr>
+          <tr><th id="meta-reference-frame-label">Reference frame</th><td id="meta-reference-frame">--</td></tr>
+          <tr><th id="meta-time-system-label">Time system</th><td id="meta-time-system">--</td></tr>
+          <tr><th id="meta-start-time-label">Start time</th><td id="meta-start-time">--</td></tr>
+          <tr><th id="meta-stop-time-label">Stop time</th><td id="meta-stop-time">--</td></tr>
         </table>
       </section>
 
       <section class="mb-600">
-        <gcds-heading tag="h2">Trajectory analytics</gcds-heading>
+        <gcds-heading tag="h2" id="analytics-heading">Trajectory analytics</gcds-heading>
 
         <div class="chart-block">
-          <gcds-text>Orion speed over mission elapsed time.</gcds-text>
+          <gcds-text id="speed-chart-description">
+            Orion speed over mission elapsed time.
+          </gcds-text>
           <img
             class="chart-img"
+            id="speed-chart-img"
             src="./assets/orion-speed-over-time.png"
-            alt="Line chart showing Orion speed over mission elapsed time"
+            alt="Chart of Orion speed over mission elapsed time"
           />
         </div>
 
         <div class="chart-block">
-          <gcds-text>Orion distance from origin over mission elapsed time.</gcds-text>
+          <gcds-text id="distance-chart-description">
+            Orion distance from origin over mission elapsed time.
+          </gcds-text>
           <img
             class="chart-img"
+            id="distance-chart-img"
             src="./assets/orion-distance-over-time.png"
-            alt="Line chart showing Orion distance from origin over mission elapsed time"
-          />
-        </div>
-
-        <div class="chart-block" id="dashboard-content"></div>
-
-        <script type="module">
-          import { DatabricksDashboard } from "https://cdn.jsdelivr.net/npm/@databricks/aibi-client@0.0.0-alpha.7/+esm";
-        
-          const dashboard = new DatabricksDashboard({
-            instanceUrl: "__DATABRICKS_INSTANCE_URL__",
-            workspaceId: "__DATABRICKS_WORKSPACE_ID__",
-            dashboardId: "__DATABRICKS_DASHBOARD_ID__",
-            token: "__DATABRICKS_TOKEN__",
-            container: document.getElementById("dashboard-content")
-          });
-        
-          dashboard.initialize();
-        </script>
-
-        <div class="chart-block">
-          <gcds-text>Summary values generated from the Gold layer.</gcds-text>
-          <img
-            class="chart-img"
-            src="./assets/orion-summary-card.png"
-            alt="Summary card showing latest Orion timestamp, speed, state vector count, and mission duration"
+            alt="Chart of Orion distance from origin over mission elapsed time"
           />
         </div>
       </section>
 
       <section class="mb-600">
-        <gcds-heading tag="h2">About this demo</gcds-heading>
-        <gcds-text>
-          This prototype shows how Databricks can be used in FSDH to ingest raw ephemeris-style
-          mission data, transform it into structured tables, and publish static outputs for the web.
+        <gcds-heading tag="h2" id="about-heading">About this demo</gcds-heading>
+        <gcds-text id="about-text">
+          This prototype shows how Databricks can be used in FSDH to ingest raw trajectory data,
+          transform it into structured tables, and publish web-ready artifacts for GitHub Pages.
         </gcds-text>
       </section>
 
-      <gcds-date-modified>2026-04-13</gcds-date-modified>
+      <gcds-date-modified id="date-modified">--</gcds-date-modified>
     </gcds-container>
 
     <div class="site-generated-footer">
       <gcds-container layout="page">
-        <gcds-text>
-          Site generated: 2026-04-13 12:47:41 UTC
-        </gcds-text>
+        <gcds-text id="site-generated-footer">Site generated: --</gcds-text>
       </gcds-container>
     </div>
 
     <gcds-footer display="full"></gcds-footer>
+
+    <script type="module" src="./assets/site.js"></script>
   </body>
 </html>
